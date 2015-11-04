@@ -1,0 +1,6 @@
+[submodule "tiles/TileStache"]
+	path = tiles/TileStache
+	url = https://github.com/TileStache/TileStache.git
+[submodule "tilemill"]
+	path = tilemill
+	url = https://github.com/mapbox/tilemill.git
