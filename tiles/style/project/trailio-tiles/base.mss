@@ -59,7 +59,7 @@
 
 }
 
-#streams[zoom>=13][zoom<=14] {
+#streams[zoom>=13] {
   line-color: @water;
   [type='stream'] {
     [zoom=13]{ line-width: 0.2; }

@@ -1,4 +1,4 @@
-#! venv/bin/python
+#! /usr/bin/python
 
 from psycopg2 import connect
 from math import floor
@@ -34,11 +34,11 @@ class Raster(object):
       base = os.path.join(CURRENT, hillshade_dir, el)
       unproj_name = base + ".unproj.tif"
       uncomp_name = base + ".uncomp.tif" 
-      subprocess.call(["gdaldem", "hillshade", os.path.join(CURRENT, elev['directory'], el + ".hgt"), unproj_name, "-z", "0.00001"])
-      subprocess.call(["gdalwarp", "-r", "cubicspline", "-multi", "-of", "GTiff", unproj_name, uncomp_name])
+      subprocess.call(["gdaldem", "hillshade", os.path.join(CURRENT, elev['directory'], el + ".hgt"), unproj_name, "-s", "111120"])
+      subprocess.call(["gdalwarp", "-r", "cubicspline", "-multi", "-dstnodata", "255", "-of", "GTiff", "-cutline", self.config['countries']['countries_shp'], unproj_name, uncomp_name])
       tifPath = os.path.join(CURRENT, hillshade_dir, el + ".tif")
       subprocess.call(["gdal_translate", "-of", "GTiff", "-co", "COMPRESS=JPEG", uncomp_name, tifPath])
-      subprocess.call(["gdaladdo", "-r", "gauss", tifPath, "2 4 8 16 32"])
+      #subprocess.call(["gdaladdo", "-r", "gauss", tifPath, "2 4 8 16 32"])
       os.remove(unproj_name)
       os.remove(uncomp_name)
  
@@ -96,4 +96,5 @@ if __name__ == "__main__":
     config = json.load(cfg)
   raster = Raster(config)
   raster.render_all()
+
 

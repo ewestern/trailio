@@ -38,7 +38,10 @@
         "geometry_field": "",
         "extent_cache": "auto",
         "extent": "-180,-90,180,83.6341006530001",
-        "dbname": "tiles"
+        "dbname": "tiles",
+        "id": "countries",
+        "project": "trailio-tiles",
+        "srs": "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
       },
       "id": "countries",
       "class": "",
@@ -46,6 +49,25 @@
       "srs": "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",
       "advanced": {},
       "name": "countries"
+    },
+    {
+      "geometry": "linestring",
+      "extent": [
+        -180,
+        -78.7290778,
+        180,
+        83.6664731
+      ],
+      "id": "coastline",
+      "class": "",
+      "Datasource": {
+        "file": "/home/peterfrance/trailio/resources/osm-coastline/coastlines-split-4326/lines.shp"
+      },
+      "layer": null,
+      "srs-name": "autodetect",
+      "srs": "",
+      "advanced": {},
+      "name": "coastline"
     },
     {
       "geometry": "polygon",
@@ -179,6 +201,30 @@
       "srs": "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",
       "advanced": {},
       "name": "hillshade"
+    },
+    {
+      "geometry": "linestring",
+      "extent": [
+        -124.414703188406,
+        31.9995833333333,
+        -113.999583333333,
+        43.0004166666667
+      ],
+      "Datasource": {
+        "type": "postgis",
+        "table": "contours_0",
+        "key_field": "",
+        "geometry_field": "",
+        "extent_cache": "auto",
+        "extent": "-124.414703188406,31.9995833333333,-113.999583333333,43.0004166666667",
+        "dbname": "tiles"
+      },
+      "id": "contours",
+      "class": "",
+      "srs-name": "WGS84",
+      "srs": "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",
+      "advanced": {},
+      "name": "contours"
     },
     {
       "geometry": "polygon",
@@ -341,30 +387,6 @@
       "srs": "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",
       "advanced": {},
       "name": "drains"
-    },
-    {
-      "geometry": "linestring",
-      "extent": [
-        -124.414703188406,
-        31.9995833333333,
-        -113.999583333333,
-        43.0004166666667
-      ],
-      "Datasource": {
-        "type": "postgis",
-        "table": "contours_0",
-        "key_field": "",
-        "geometry_field": "",
-        "extent_cache": "auto",
-        "extent": "-124.414703188406,31.9995833333333,-113.999583333333,43.0004166666667",
-        "dbname": "tiles"
-      },
-      "id": "contours",
-      "class": "",
-      "srs-name": "WGS84",
-      "srs": "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",
-      "advanced": {},
-      "name": "contours"
     },
     {
       "geometry": "polygon",
