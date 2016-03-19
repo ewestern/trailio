@@ -1,0 +1,34 @@
+tables:
+  trails:
+    type: linestring
+    mapping:
+      highway: 
+        - path
+        - footway
+        - track
+      ford: 
+        - 'yes'
+    columns:
+      - name: osm_id 
+        type: id
+      - name: geometry
+        type: geometry
+      - name: trail_type
+        type: mapping_value
+      - name: sac_scale
+        key: sac_scale
+        type: string
+  routes:
+    type: relation_member
+    columns:
+      - name: osm_id
+        type: id
+      - key: ref
+        name: ref
+        type: string
+      - name: member
+        type: member_id
+      - name: index
+        type: member_index
+    mapping:
+      route: [hiking, foot]
