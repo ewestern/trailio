@@ -21,6 +21,13 @@ tables:
       - name: sac_scale
         key: sac_scale
         type: string
+      - name: visibility
+        key: trail_visibility
+        type: string
+      - name: track_type
+        key: track_type
+        type: string
+        
   route_members:
     type: relation_member
     columns:
