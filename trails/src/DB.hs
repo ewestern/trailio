@@ -54,32 +54,32 @@ instance ToSql a => ToSql (Maybe a) where
   toSql (Just a) = toSql a
   toSql Nothing = return (" " <> [sql| true |])
 
-class (PG.ToRow v, PG.FromRow v, ToSql (Condition v)) =>  Queryable v where
-  type Condition v
-  createMany :: [v] -> DB [(Ref v, v)]
-  updateMany :: Maybe (Condition v) -> [(Ref v, v)] -> DB ()
-  readMany :: Maybe (Condition v) -> [Ref v] -> DB [(Ref v, v)]
-  deleteMany :: Maybe (Condition v) -> [Ref v] -> DB ()
---
-  create :: v -> DB (Ref v, v)
-  create v = do
-    vs <- createMany [v]
-    case vs of
-      x:_ -> return x
-      [] -> throwError err500
+{-class (PG.ToRow v, PG.FromRow v, ToSql (Condition v)) =>  Queryable v where-}
+  {-type Condition v-}
+  {-createMany :: [v] -> DB [(Ref v, v)]-}
+  {-updateMany :: Maybe (Condition v) -> [(Ref v, v)] -> DB ()-}
+  {-readMany :: Maybe (Condition v) -> [Ref v] -> DB [(Ref v, v)]-}
+  {-deleteMany :: Maybe (Condition v) -> [Ref v] -> DB ()-}
+{----}
+  {-create :: v -> DB (Ref v, v)-}
+  {-create v = do-}
+    {-vs <- createMany [v]-}
+    {-case vs of-}
+      {-x:_ -> return x-}
+      {-[] -> throwError err500-}
 
-  update :: Maybe (Condition v) -> (Ref v, v) -> DB ()
-  update c (r, v) = updateMany c [(r, v)]
+  {-update :: Maybe (Condition v) -> (Ref v, v) -> DB ()-}
+  {-update c (r, v) = updateMany c [(r, v)]-}
 
-  read :: Maybe (Condition v) -> (Ref v) ->  DB v
-  read c r = do
-    rs <- readMany c [r]
-    case rs of
-      (_,v):_ -> return v
-      [] -> throwError err500
+  {-read :: Maybe (Condition v) -> (Ref v) ->  DB v-}
+  {-read c r = do-}
+    {-rs <- readMany c [r]-}
+    {-case rs of-}
+      {-(_,v):_ -> return v-}
+      {-[] -> throwError err500-}
 
-  delete :: Maybe (Condition v) -> (Ref v) -> DB ()
-  delete c r = deleteMany c [r]
+  {-delete :: Maybe (Condition v) -> (Ref v) -> DB ()-}
+  {-delete c r = deleteMany c [r]-}
 
 
 type DB = ReaderT DBContext (ExceptT Error IO)
@@ -110,7 +110,6 @@ returning q v = do
   ctx <- ask
   liftIO $ PG.returning (_connection ctx) q v
 
--- IDEA, use Servant kinds to determine which context to run transation in 
 runDB :: DBContext -> DB a -> (ExceptT Error IO a)
 runDB ctx db =  do
   mapExceptT (PG.withTransaction ( _connection ctx) ) $ runReaderT db ctx
