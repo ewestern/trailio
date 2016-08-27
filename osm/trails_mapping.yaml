@@ -64,6 +64,9 @@ tables:
       - key: ref
         name: ref
         type: string
+      - key: name
+        name: name 
+        type: string
       - name: member
         type: member_id
       - name: index

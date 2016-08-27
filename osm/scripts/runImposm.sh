@@ -25,4 +25,4 @@ set -u
 HOSTIP=$(ipconfig getifaddr en0)
 #HOSTIP=$(docker-machine ip)
 
-docker run -p 5432:5432 -e "HOSTIP=$HOSTIP" -e "READURL=$READURL" -e "MAPPING=$MAPPING" --net=host -t -i ewestern/imposm3 
+docker run -p 5432:5432 -e "HOSTIP=$HOSTIP" -e "READURL=$READURL" -e "MAPPING=$MAPPING" --net=host -t -i ewestern/osm
