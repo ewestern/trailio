@@ -10,11 +10,11 @@ RUN ln -s /usr/lib/libgeos_c.so /usr/lib/libgeos.so
 WORKDIR $GOPATH
 
 RUN go get github.com/omniscale/imposm3
-RUN go install github.com/omniscale/imposm3
+RUN go install github.com/omniscale/imposm3/cmd/imposm3
 
 COPY *mapping* $GOPATH/
 COPY *run.sh* $GOPATH/bin/
 
 EXPOSE 5432
 
-ENTRYPOINT ["run.sh"]
+#ENTRYPOINT ["run.sh"]
