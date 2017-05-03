@@ -9,13 +9,19 @@
 {-# LANGUAGE TypeOperators #-}
 
 
-module API where
+module API (
+    server
+  , api
+) where
 
 import Data.Geometry.Geos.Serialize
 import Data.Geometry.Geos.Types
 import Servant.API
 import Data.Monoid ((<>))
 import qualified Data.Text as T
+import Control.Monad.Trans.Reader
+import Control.Monad.Trans.Maybe
+import Geo
 
 showText :: Show a => a -> T.Text
 showText = T.pack . show
@@ -31,20 +37,18 @@ instance FromHttpApiData LatLng where
     [lat, lng]  -> Right $ LatLng lat lng
     _           -> Left "Indecipherable LatLng"
 
-type BizData = ()
-
-type TrailioM = ReaderT BizData IO
-
-type GeoBoxAPI = "box" 
-                :> QueryParam "sw" LatLng
-                :> QueryParam "ne" LatLng
-                :> TrailioM GeoResponse
-
-type GeoPointAPI = "point"
-                :> QueryParam "point" LatLng
-                :> QueryParam "distance" Float
-                :> TrailioM GeoResponse
-
           
+runTrailio :: BizData -> TrailioM a -> DB a
+runTrailio bd = runReaderT bd
 
-boxServer :: 
+boxServer :: Maybe LatLng -> Maybe LatLng -> TrailioM GeoResponse
+boxServer la ln = do
+  
+
+enter' :: DBContext -> BizData -> TrailioM :~> ExceptT ServantErr IO
+enter' ctx bd =  runDB ctx . runBiz bd
+
+server :: ServerT API TrailioM
+server = enter  (enter' ctx bd) server'
+  where
+    server' = boxServer :<|> pointServer

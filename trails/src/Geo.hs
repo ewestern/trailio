@@ -1,8 +1,10 @@
+module Geo where
 
 import GEOS.Serialize
 import GEOS.Types
 import Database.PostgreSQL.Simple.ToField
 import Database.PostgreSQL.Simple.FromField
+import DB
 
 
 instance ToField Geometry where
@@ -35,28 +37,22 @@ instance ToField LatLng where
 instance FromField LatLng where
   fromField = error "not yet defined"
 
-renderBox :: Box -> String
-renderBox (Box sw ne) = "ST_MakeBox2D("
+renderBounds :: Bounds -> String
+renderBounds (Bounds sw ne) = "ST_MakeBounds2D("
                       <> (renderLatLng sw)
                       <> ","
                       <> (renderLatLng ne)
                       <> ")"
 
-instance ToField Box where
-  toField = Plain . fromString . renderBox 
+instance ToField Bounds where
+  toField = Plain . fromString . renderBounds 
 
-instance FromField Box where
+instance FromField Bounds where
   fromField = error ""
 
-data Box
-  = Box {
-    _sw :: LatLng
+data Bounds = Bounds 
+  { _sw :: LatLng
   , _ne :: LatLng
   }
 
-instance GeoQueryable LineString where 
 
-class GeoQueryable a where
-  findWithin :: Box -> DB a
-
-{-instance -}

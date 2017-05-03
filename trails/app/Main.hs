@@ -1,6 +1,10 @@
 module Main where
 
-import Lib
+import Servant.Server
+import API (api, server)
 
 main :: IO ()
-main = someFunc
+main = run serve api server
+
+
+
