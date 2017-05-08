@@ -14,20 +14,29 @@ module API (
   , api
 ) where
 
-import Data.Geometry.Geos.Serialize
-import Data.Geometry.Geos.Types
 import Servant.API
+import Servant.Server 
+import Servant
 import Data.Monoid ((<>))
 import qualified Data.Text as T
 import Control.Monad.Trans.Reader
 import Control.Monad.Trans.Maybe
+import Control.Monad.Except
+import Trails
+import Data.Proxy
+import DB
 import Geo
 
 showText :: Show a => a -> T.Text
 showText = T.pack . show
 
 readText :: Read a => T.Text -> a
-readText = read . T.unpack
+readText = Prelude.read . T.unpack
+
+{-
+Segments -> Bounds, Proximity
+Trails -> Name, Bounds, Proximity
+-}
 
 instance ToHttpApiData LatLng where
   toUrlPiece (LatLng t g) = (showText t) <> "," <> (showText g)  
@@ -37,18 +46,19 @@ instance FromHttpApiData LatLng where
     [lat, lng]  -> Right $ LatLng lat lng
     _           -> Left "Indecipherable LatLng"
 
-          
-runTrailio :: BizData -> TrailioM a -> DB a
-runTrailio bd = runReaderT bd
+ 
+enterTrailio :: DBContext -> BizData -> TrailioM :~> Handler
+--enterTrailio ctx bd = Nat $ mapExceptT (\m -> runDB ctx $ runReaderT m bd )
+enterTrailio ctx bd = Nat $ mapExceptT (\m -> runDB ctx $ runReaderT m bd )
 
-boxServer :: Maybe LatLng -> Maybe LatLng -> TrailioM GeoResponse
-boxServer la ln = do
-  
 
-enter' :: DBContext -> BizData -> TrailioM :~> ExceptT ServantErr IO
-enter' ctx bd =  runDB ctx . runBiz bd
+trailServer :: ServerT TrailsAPI TrailioM
+trailServer = segmentServer -- :<|> trailServer
+{-enter' :: DBContext -> BizData -> TrailioM :~> ExceptT ServantErr IO-}
+{-enter' ctx bd =  runDB ctx . runTrailio bd-}
 
-server :: ServerT API TrailioM
-server = enter  (enter' ctx bd) server'
-  where
-    server' = boxServer :<|> pointServer
+server :: DBContext -> ServerT TrailsAPI Handler
+server ctx = enter  (enterTrailio ctx ()) trailServer
+
+api :: Proxy TrailsAPI
+api = Proxy

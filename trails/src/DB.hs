@@ -27,12 +27,7 @@ import GHC.Generics
 import Data.Hashable
 import qualified Data.Text as T
 import Ref
-import LRU
-import Person.Types
-import Service.Types
-import Booking.Types
-import Account.Types
-import Field.Types
+import Types
 import Data.Typeable
 
 
@@ -51,8 +46,9 @@ instance PG.ToRow (Ref a) where
 instance ToField (Ref a) where
   toField (Ref a) = toField a
 
+
 data DBContext = DBContext {
-  _cacheHandle :: StripedHandle CacheKey CacheValue,
+  {-_cacheHandle :: StripedHandle CacheKey CacheValue,-}
   _connectionString :: B.ByteString,
   _connection :: Maybe PG.Connection,
   _staging :: Bool
@@ -67,8 +63,8 @@ askConnection = do
     Nothing -> error "Connection not supplied"
 -- throwError DBError_NoConnection
 
-askHandle :: DB (StripedHandle CacheKey CacheValue)
-askHandle = asks _cacheHandle
+{-askHandle :: DB (StripedHandle CacheKey CacheValue)-}
+{-askHandle = asks _cacheHandle-}
 
 class ToSql a where 
   toSql :: a -> DB PG.Query
@@ -77,12 +73,13 @@ instance ToSql a => ToSql (Maybe a) where
   toSql (Just a) = toSql a
   toSql Nothing = return (" " <> [sql| true |])
 
+{-
 readCached :: (Queryable a, Cacheable a) => Maybe (Condition a) -> Ref a -> DB (Maybe a)
 readCached cond r = do 
   handle <- askHandle
   let m = (fmap . fmap) makeValue (read cond r)
   mv <- stripedCached handle (makeKey r) m
-  case getValue <$> mv  of
+  case getValue mv  of
     Just val -> do
       verify <- maybeVerify cond (r, val)
       if verify
@@ -105,6 +102,7 @@ createCached v = do
 
 deleteCached :: (Queryable a, Cacheable a) => Maybe (Condition a) -> (Ref a) -> DB ()
 deleteCached _ _ = undefined
+-}
 
 maybeVerify :: Queryable a => Maybe (Condition a) -> (Ref a, a) -> DB Bool
 maybeVerify (Just c) tup = verifyCondition c tup
@@ -183,67 +181,43 @@ nameLike s t = do
 
 
 class Cacheable a where
+  {-data CacheValue :: *-}
+  {-data CacheKey :: *-}
   makeKey :: Ref a -> CacheKey
-  getValue :: CacheValue -> a
+  getValue :: CacheValue ->  a
   makeValue :: a -> CacheValue
 
 
-{-
-instance Cacheable Person where
-  makeKey = CacheKey_Person
-  getValue (CacheValue_Person p) = p
+
+instance Cacheable Trail where
+  makeKey = CacheKey_Trail
+  getValue (CacheValue_Trail t) = t
   getValue _ = error "Shouldn't happen"
-  makeValue = CacheValue_Person
+  makeValue = CacheValue_Trail
 
-instance Cacheable Service where
-  makeKey = CacheKey_Service
-  getValue (CacheValue_Service s) = s
+instance Cacheable TrailSegment where
+  makeKey = CacheKey_TrailSegment
+  getValue (CacheValue_TrailSegment t) = t
   getValue _ = error "Shouldn't happen"
-  makeValue = CacheValue_Service
-
-instance Cacheable Account where
-  makeKey = CacheKey_Account
-  getValue (CacheValue_Account a) = a
-  getValue _ = error "Shouldn't happen"
-  makeValue = CacheValue_Account
-
-instance Cacheable Booking where
-  makeKey = CacheKey_Booking
-  getValue (CacheValue_Booking b) = b
-  getValue _ = error "Shouldn't happen"
-  makeValue = CacheValue_Booking
-
-instance Cacheable Field where
-  makeKey = CacheKey_Field
-  getValue (CacheValue_Field b) = b
-  getValue _ = error "Shouldn't happen"
-  makeValue = CacheValue_Field
-
-
+  makeValue = CacheValue_TrailSegment
 
 data CacheKey 
-  = CacheKey_Person (Ref Person)
-  | CacheKey_Service (Ref Service)
-  | CacheKey_Account (Ref Account)
-  | CacheKey_Field (Ref Field)
-  | CacheKey_Booking (Ref Booking) deriving (Ord, Eq, Generic)
+  = CacheKey_Trail (Ref Trail)
+  | CacheKey_TrailSegment (Ref TrailSegment)
+  deriving (Ord, Eq, Generic)
 
 instance Hashable CacheKey 
 
+data CacheValue 
+  = CacheValue_Trail Trail
+  | CacheValue_TrailSegment TrailSegment
+  {-deriving (Ord, Eq, Generic)-}
 
-data CacheValue
-  = CacheValue_Person Person
-  | CacheValue_Service Service
-  | CacheValue_Account Account
-  | CacheValue_Booking Booking
-  | CacheValue_Field Field
-
--}
 
 runDB :: DBContext -> DB a -> IO a
 runDB ctx db =  do
   conn <- liftIO $ PG.connectPostgreSQL $ _connectionString ctx
   if _staging ctx
-    then liftIO (PG.execute_ conn "set search_path to staging") >> return ()
+    then liftIO (PG.execute_ conn "set search_path to import, public") >> return ()
     else return ()
   PG.withTransaction conn $ runReaderT db $ ctx { _connection = Just conn }
