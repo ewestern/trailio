@@ -22,10 +22,14 @@ import qualified Data.Text as T
 import Control.Monad.Trans.Reader
 import Control.Monad.Trans.Maybe
 import Control.Monad.Except
+import Network.URI.Encode
+
+
 import Trails
 import Data.Proxy
 import DB
 import Geo
+
 
 showText :: Show a => a -> T.Text
 showText = T.pack . show
@@ -33,16 +37,11 @@ showText = T.pack . show
 readText :: Read a => T.Text -> a
 readText = Prelude.read . T.unpack
 
-{-
-Segments -> Bounds, Proximity
-Trails -> Name, Bounds, Proximity
--}
-
 instance ToHttpApiData LatLng where
-  toUrlPiece (LatLng t g) = (showText t) <> "," <> (showText g)  
+  toUrlPiece (LatLng t g) = encodeText $ (showText t) <> "," <> (showText g)  
 
 instance FromHttpApiData LatLng where
-  parseUrlPiece t = case fmap readText $ T.splitOn "," t  of
+  parseUrlPiece t = case fmap readText $ T.splitOn "," $ decodeText t  of
     [lat, lng]  -> Right $ LatLng lat lng
     _           -> Left "Indecipherable LatLng"
 
