@@ -62,8 +62,29 @@ executable trails-exe
                     , directory
                     , wai-cors
                     , data-default
-                    
+
   default-language:    Haskell2010
+
+executable trails-gen
+  hs-source-dirs: gen
+  main-is:             Main.hs
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  build-depends:      base
+                    , trails
+                    , servant-js
+                    , text
+                    , aeson
+                    , transformers
+                    , filepath
+                    , bytestring
+                    , optparse-applicative
+                    , directory
+                    , data-default
+
+  default-language:    Haskell2010
+
+
+
 
 --executable trails-client
   --hs-source-dirs:     client
