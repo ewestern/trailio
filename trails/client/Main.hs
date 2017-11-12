@@ -14,43 +14,52 @@ import Network.HTTP.Client (newManager, defaultManagerSettings)
 import Options.Applicative
 import Options.Generic
 import Data.Monoid ((<>))
+import Data.Char (toLower, isLower)
 import Data.Aeson
+import Data.Aeson.Encode.Pretty
 import Servant.API
 import Servant.Client
+import qualified Data.ByteString.Lazy.Char8 as BCL
+
+import Database.Postgis.Geometry (SRID)
 
 import API
-import Trails
-import Ref
-import Types
+import Trails (TrailsAPI, SegmentAPI)
+import Geo (LatLng(..))
 
 data SubCommand
-  = Segment_Command (CrudCommand TrailSegment TrailSegment) 
-  | Trail_Command (CrudCommand Trail Trail)
+  = Segment_Command GeoCommand
+  | Trail_Command GeoCommand
   deriving (Generic, Show)
 
-data CrudCommand a b
-  = Create b
-  | Read (Ref a)
-  | List
-  | Update (Ref a) b
-  | Delete (Ref a) 
-  deriving (Generic, Show, Read)
+data GeoCommand 
+  = GeoBounds LatLng LatLng SRID 
+  | GeoProximity LatLng Int SRID deriving (Generic, Show, Read)
+
+modifiers :: Modifiers
+modifiers = defaultModifiers {
+    fieldNameModifier = dropWhile (\c -> c == '_')
+  , constructorNameModifier = map toLower
+}
+
+instance ParseRecord LatLng where
+  parseRecord = parseRecordWithModifiers modifiers
 
 
+prettyPrint :: ToJSON a => Either ServantError a -> IO ()
+prettyPrint a = case a of
+  Left err -> print err
+  Right a' -> BCL.putStrLn . encodePretty $ a'
 
 makeQuery :: ToJSON a => ClientEnv -> ClientM a -> IO ()
 makeQuery env m = runClientM m env  >>= prettyPrint
 
-
-runSegmentQuery :: Client SegmentAPI -> ClientEnv -> CrudCommand Trail Trail -> IO ()
+runSegmentQuery :: Client SegmentAPI -> ClientEnv -> GeoCommand -> IO ()
 runSegmentQuery serv env comm = do
   let getSegmentBounds :<|> getSegmentProximity = serv
   case comm of
-    {-Read a      ->  makeQuery env (getAccount a) -}
-    List        ->  makeQuery env listAccounts
-    {-Create a    -> makeQuery env (createAccount a) -}
-    {-Update r a  ->  makeQuery env (updateAccount (Just r) a)-}
-    _ -> undefined
+    GeoBounds sw ne srid          ->  makeQuery env (getSegmentBounds sw ne srid) 
+    GeoProximity center dis srid  -> makeQuery env (getSegmentProximity center dis srid)
 
 runQuery :: ClientEnv -> SubCommand -> IO ()
 runQuery env comm = do
@@ -58,31 +67,16 @@ runQuery env comm = do
     case comm of
       {-Trail_Command cmd -> -}
       Segment_Command cmd -> runSegmentQuery segment env cmd
-{-
-runServiceQuery serviceServer env cmd
+      _ -> error "FOO"
 
-runAccountQuery accountServer env cmd
-      Person  cmd -> runPersonQuery personServer env cmd
-      Booking cmd -> runBookingQuery bookingServer env cmd
-      Field   cmd -> runFieldQuery fieldsServer env cmd
-      Login _ -> undefined
--}
 
-crudParser = 
+geoParser :: Parser GeoCommand
+geoParser = 
   subparser
-    (command "create"
-      (info (Create <$> parseRecord)
-        (fullDesc <> progDesc ""))
-    <> command "read"
-      (info (Read <$> parseRecord)
-        (fullDesc <> progDesc "test of read"))
-    <> command "list"
-      (info ( pure List )
-        (fullDesc <> progDesc "test of read"))
-    <> command "update"
-      (info (Update <$> parseRecord <*> parseRecord)
-        (fullDesc <> progDesc "test of update")))
-
+  (command "bounds"
+    (info (GeoBounds <$> parseRecord <*> parseRecord <*> parseRecord) fullDesc)
+  <> command "proximity"
+    (info (GeoProximity <$> parseRecord <*> parseRecord <*> parseRecord) fullDesc))
 
 
 data Options 
@@ -110,13 +104,13 @@ subcommandParser :: Parser SubCommand
 subcommandParser =  
     subparser 
       (command "segment" 
-        (info (Segment_Command <$> crudParser)
-          (progDesc "segment foo"))
+        (info (Segment_Command <$> geoParser) fullDesc)
       <> command "trail"
-          (info (Trail_Command <$> crudParser)
-            (progDesc "person foo")))
+          (info (Trail_Command <$> geoParser) fullDesc))
 
 
+instance ParseRecord SubCommand where
+  parseRecord = subcommandParser
 
 main :: IO ()
 main = do

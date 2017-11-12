@@ -86,23 +86,26 @@ executable trails-gen
 
 
 
---executable trails-client
-  --hs-source-dirs:     client
-  --main-is:            Main.hs
+executable trails-client
+  hs-source-dirs:     client
+  main-is:            Main.hs
 
-  --build-depends:       base
-                     --, servant-client
-                     --, servant
-                     --, optparse-applicative
-                     --, http-client
-                     --, trails
-                     --, containers
-                     --, optparse-generic
-                     --, text
-                     --, aeson
+  build-depends:       base
+                     , servant-client
+                     , servant
+                     , optparse-applicative
+                     , http-client
+                     , trails
+                     , containers
+                     , optparse-generic
+                     , text
+                     , aeson
+                     , aeson-pretty
+                     , haskell-postgis
+                     , bytestring
 
-  --default-language:    Haskell2010
-  --ghc-options:      -Wall -fno-warn-orphans
+  default-language:    Haskell2010
+  ghc-options:      -Wall -fno-warn-orphans
 
 
 test-suite trails-test

@@ -1,7 +1,9 @@
+{-# LANGUAGE DeriveGeneric     #-}
+
 module Geo where
 
-{-import GEOS.Serialize-}
-{-import GEOS.Types-}
+import GHC.Generics
+
 import Data.Monoid ((<>))
 import Data.ByteString.Builder 
 import Data.ByteString.Lazy (fromStrict)
@@ -25,7 +27,7 @@ data LatLng
   = LatLng {
     _lat :: Float
   , _lng :: Float
-  } deriving (Read, Eq, Ord)
+  } deriving (Generic, Show, Read, Eq, Ord)
 
 renderLatLng :: LatLng -> String
 renderLatLng (LatLng t g) = "ST_transform("
