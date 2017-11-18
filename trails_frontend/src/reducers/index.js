@@ -1,9 +1,8 @@
 import { combineReducers } from 'redux'
-//import counter from './counter'
-import {viewport} from './map'
+import {viewportState, selectedSegments} from './map'
 
 const rootReducer = combineReducers({
-  viewport
+  viewportState, selectedSegments
 })
 
 export default rootReducer

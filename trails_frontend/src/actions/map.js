@@ -1,45 +1,26 @@
-import { CHANGE_VIEWPORT } from 'constants/ActionTypes'
+import { CHANGE_VIEWPORT, SELECT_SEGMENT } from 'constants/ActionTypes'
 import { createAction } from 'redux-actions'
-//import 'assets/api.js'
-//const getSegmentProximityByPointByDistance = require("exports?getSegmentProximityByPointByDistance!assets/api.js")
+import Leaflet from 'leaflet'
 
-
-
-//export const changeViewport = createAction(CHANGE_VIEWPORT)
-//export const changeViewport = function(asd){
-  //console.log("ASD", asd);
-//}
-
-function onSuccess(asd){
-  console.log("SUCC", asd)
-}
-function onError(asd){
-  console.log("ERR", asd)
+function viewportToBounds(vp, size={x:600,y:400}) {
+  var sizeP = Leaflet.point(size),
+      half = sizeP.divideBy(2),
+      point = Leaflet.CRS.EPSG4326.latLngToPoint(Leaflet.latLng(vp.center), vp.zoom),
+      sw = Leaflet.CRS.EPSG4326.pointToLatLng(point.subtract(half), vp.zoom), 
+      ne = Leaflet.CRS.EPSG4326.pointToLatLng(point.add(half), vp.zoom);
+  return [sw, ne]; ///Leaflet.latLngBounds(sw, ne)
 }
 const getSegment = function(viewport) {
-  console.log("ASD", viewport, window.getSegmentProximityByPointByDistance);
+  var [sw, ne] = viewportToBounds(viewport),
+      swa = [sw.lat, sw.lng],
+      nea = [ne.lat, ne.lng];
   return new Promise((resolve, reject) => {
-    window.getSegmentProximityByPointByDistance([-118,0, 36], 100, 4326, function(asd) { console.log('DDD', asd); resolve(asd)}, function(asd) { console.log('EEE', asd); reject(asd)})
+    window.getSegmentBoundsBySwByNe(swa, nea, 4326, resolve, reject);
   });
 }
-export const changeViewport = createAction(CHANGE_VIEWPORT, async foo => {
-  console.log("REQ", foo);
-  const result = await getSegment(foo)
-  console.log("RES", result)
+export const changeViewport = createAction(CHANGE_VIEWPORT, async viewport => {
+  const result = await getSegment(viewport)
   return result;
 })
-//export const increment = createAction(INCREMENT_COUNTER)
-//
-//export const decrement = createAction(DECREMENT_COUNTER)
 
-//export function incrementIfOdd() {
-//  return (dispatch, getState) => {
-//    const { counter } = getState()
-//
-//    if (counter % 2 === 0) {
-//      return
-//    }
-//
-//    dispatch(increment())
-//  }
-//}
+export const selectSegment = createAction (SELECT_SEGMENT)

@@ -1,47 +1,31 @@
-import { ZOOM_IN, ZOOM_OUT, MOVE_TO } from 'constants/ActionTypes'
-import { handleAction } from 'redux-actions'
-import { CHANGE_VIEWPORT } from 'constants/ActionTypes'
+import { handleAction, combineActions } from 'redux-actions'
+import { CHANGE_VIEWPORT, SELECT_SEGMENT } from 'constants/ActionTypes'
+import I from 'immutable'
 
 const initialViewport = {
   center: [36.01, -119],
   zoom : 13
 }
 
+const initialViewportState = {
+  viewport: initialViewport,
+  segments: I.Map()
+}
 
+/// name of function is mapped to attribute in state
+function take(state, action) {
+  var map = action.payload.reduce(function(acc, v) {
+      return acc[v[0]] = v[1], acc
+  }, {})
+  var payload = I.Map(map);
+  return {
+    viewport: state.viewport,
+    segments: state.segments.merge(payload)
+  }
+}
 
-
-export const viewport = handleAction(CHANGE_VIEWPORT, (state,action) => state, initialViewport)
-
-//export function viewport(state=initialViewport, action) {
-  //switch (action.type) {
-    //case MOVE_TO:
-      //return {
-        //position: action.value,
-        //zoom: state.zoom
-      //} 
-    //case ZOOM_IN:
-      //return {
-        //position: state.position,
-        //zoom: state.zoom + 1
-      //}
-    //case ZOOM_OUT:
-      //return {
-        //position: state.position,
-        //zoom: state.zoom - 1
-      //}
-    //default:
-      //return state
-  //}
-//}
-
-
-//export default function counter(state = initialState, action) {
-  //switch (action.type) {
-    //case INCREMENT_COUNTER:
-      //return state + 1
-    //case DECREMENT_COUNTER:
-      //return state - 1
-    //default:
-      //return state
-  //}
-//}
+function select(state, action) {
+  return state.set(action.payload.osmId, action.payload);
+} 
+export const viewportState = handleAction(CHANGE_VIEWPORT, take, initialViewportState)
+export const selectedSegments = handleAction(SELECT_SEGMENT, select, I.Map())

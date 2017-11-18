@@ -1,30 +1,45 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-//import { Counter } from 'components'
+
+import {List, ListItem} from 'material-ui/List';
+import styled from 'styled-components'
+
 import { MapComponent } from 'components'
 import { createStructuredSelector, createSelector } from 'reselect'
 
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-//import * as CounterActions from 'actions/counter'
 import * as MapActions from 'actions/map'
 
 
+const RowContainer = styled.div`display: flex; flex-direction: row;`
 class MapContainer extends React.Component {
   static propTypes = {
-    //center: PropTypes.array.isRequired,
     viewport: PropTypes.object.isRequired,
+    segments: PropTypes.object.isRequired,
+    selected: PropTypes.object.isRequired
   }
-  //changeViewport(asd) {
-    //console.log("cvp", asd)
-  //}
   render() {
-    console.log("AS", this.props);
+    var that = this;
     return (
-      <MapComponent 
-        viewport={this.props.viewport}
-        onViewportChanged={this.props.changeViewport}
-      />
+      <RowContainer>
+        <MapComponent 
+          style={{flex: 'auto'}}
+          viewport={this.props.viewport}
+          segments={this.props.segments}
+          onViewportChanged={this.props.changeViewport}
+          onSegmentClick={this.props.selectSegment}
+          selected={this.props.selected}
+        />
+        <List style={{flex: 'auto'}}>
+          {this.props.selected.toArray().map(function(s) {
+              console.log("SEL", s);
+              return (
+                  <ListItem key={s.osmId.toString()} primaryText={"foo"} />
+              )
+          })}
+        </List>
+      </RowContainer>
     )
   }
 }
@@ -33,12 +48,17 @@ class MapContainer extends React.Component {
 
 const mapStateToProps = createStructuredSelector({
   viewport: createSelector(
-    //(state) => state.viewport,
-    function(s) { console.log("s", s); return s.viewport },
-    //(centerState) => centerState
-    function(s) { console.log("s2", s); return s }
+    (state) => state.viewportState.viewport,
+    (centerState) => centerState
+  ),
+  segments: createSelector(
+    (state) => state.viewportState.segments,
+    (cs) => cs
+  ),
+  selected: createSelector(
+    (state) => state.selectedSegments,
+    (cs) => cs
   )
-
 })
 
 function mapDispatchToProps(dispatch) {
