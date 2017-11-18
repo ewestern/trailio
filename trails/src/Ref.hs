@@ -36,14 +36,11 @@ instance FromField (Ref a) where
 instance ToSample (Ref a) where
   toSamples _ = singleSample $ Ref 1
 
-{-instance ToJSON a => ToJSON (M.Map (Ref b) a) where-}
-  {-toJSON = toJSON . M.mapKeys (\(Ref v) -> show v)-}
-
-{-instance FromJSON a => FromJSON (M.Map (Ref b) a) where-}
-  {-parseJSON v = M.mapKeys (\s -> Ref $ Prelude.read s ) <$>  parseJSON v-}
-
 instance ToJSON (Ref a) where
   toJSON (Ref v) = toJSON . show $ v
+
+instance ToJSONKey (Ref a)
+instance FromJSONKey (Ref a)
 
 instance FromJSON (Ref a) where
   parseJSON v = (Ref . Prelude.read) <$> (parseJSON  v)

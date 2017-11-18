@@ -4,7 +4,7 @@ packages:
 - '.'
 - location:
     git: git@github.com:ewestern/haskell-postgis.git
-    commit: 1202bc5341970b929c06fedd10c93c0e4d93b83d
+    commit: 04f615fe994d9c53ea7dc7fce305fc82c5e4d7b0
   extra-dep: true
 
 resolver: lts-8.13

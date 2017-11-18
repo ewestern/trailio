@@ -29,10 +29,11 @@ data TrailSegment
   } deriving (Eq, Show)
 
 
-data Trail 
-  = Trail {
-    _trailName :: T.Text,
-    _trailSegments :: V.Vector TrailSegment
+data  Route
+  = Route {
+    _routeName :: T.Text,
+    _routeSegments :: V.Vector TrailSegment,
+    _routeOsmId :: Int
   } deriving (Eq, Show)
 
 

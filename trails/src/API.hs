@@ -47,14 +47,11 @@ instance FromHttpApiData LatLng where
 
  
 enterTrailio :: DBContext -> BizData -> TrailioM :~> Handler
---enterTrailio ctx bd = Nat $ mapExceptT (\m -> runDB ctx $ runReaderT m bd )
 enterTrailio ctx bd = Nat $ mapExceptT (\m -> runDB ctx $ runReaderT m bd )
 
 
 trailServer :: ServerT TrailsAPI TrailioM
 trailServer = segmentServer -- :<|> trailServer
-{-enter' :: DBContext -> BizData -> TrailioM :~> ExceptT ServantErr IO-}
-{-enter' ctx bd =  runDB ctx . runTrailio bd-}
 
 server :: DBContext -> ServerT TrailsAPI Handler
 server ctx = enter  (enterTrailio ctx ()) trailServer
