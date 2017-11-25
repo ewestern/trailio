@@ -181,19 +181,17 @@ nameLike s t = do
 
 
 class Cacheable a where
-  {-data CacheValue :: *-}
-  {-data CacheKey :: *-}
   makeKey :: Ref a -> CacheKey
   getValue :: CacheValue ->  a
   makeValue :: a -> CacheValue
 
 
 
-instance Cacheable Trail where
-  makeKey = CacheKey_Trail
-  getValue (CacheValue_Trail t) = t
+instance Cacheable Route where
+  makeKey = CacheKey_Route
+  getValue (CacheValue_Route t) = t
   getValue _ = error "Shouldn't happen"
-  makeValue = CacheValue_Trail
+  makeValue = CacheValue_Route
 
 instance Cacheable TrailSegment where
   makeKey = CacheKey_TrailSegment
@@ -202,14 +200,14 @@ instance Cacheable TrailSegment where
   makeValue = CacheValue_TrailSegment
 
 data CacheKey 
-  = CacheKey_Trail (Ref Trail)
+  = CacheKey_Route (Ref Route)
   | CacheKey_TrailSegment (Ref TrailSegment)
   deriving (Ord, Eq, Generic)
 
 instance Hashable CacheKey 
 
 data CacheValue 
-  = CacheValue_Trail Trail
+  = CacheValue_Route Route
   | CacheValue_TrailSegment TrailSegment
   {-deriving (Ord, Eq, Generic)-}
 

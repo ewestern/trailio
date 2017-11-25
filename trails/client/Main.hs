@@ -20,16 +20,19 @@ import Data.Aeson.Encode.Pretty
 import Servant.API
 import Servant.Client
 import qualified Data.ByteString.Lazy.Char8 as BCL
+import qualified Data.Text as T
 
-import Database.Postgis.Geometry (SRID)
+{-import Database.Postgis.Geometry (SRID)-}
 
 import API
 import Trails (TrailsAPI, SegmentAPI)
 import Geo (LatLng(..))
 
+type SRID = Maybe Int
+
 data SubCommand
   = Segment_Command GeoCommand
-  | Trail_Command GeoCommand
+  | Route_Command T.Text
   deriving (Generic, Show)
 
 data GeoCommand 
@@ -61,11 +64,14 @@ runSegmentQuery serv env comm = do
     GeoBounds sw ne srid          ->  makeQuery env (getSegmentBounds sw ne srid) 
     GeoProximity center dis srid  -> makeQuery env (getSegmentProximity center dis srid)
 
+{-runRouteQuery :: Client NamedTrailApi -> ClientEnv -> T.Text -> IO ()-}
+{-runRouteQuery serv env comm = makeQuery env (serv comm)-}
+
 runQuery :: ClientEnv -> SubCommand -> IO ()
 runQuery env comm = do
-    let segment = client api
+    let segment :<|> route = client api
     case comm of
-      {-Trail_Command cmd -> -}
+      Route_Command cmd -> makeQuery env (route cmd)
       Segment_Command cmd -> runSegmentQuery segment env cmd
       _ -> error "FOO"
 
@@ -100,13 +106,18 @@ parseOptions =
       <> short 'p' )
 
 
+routeParser :: Parser T.Text
+routeParser = T.pack <$> (strOption (long "name" <> short 'n'))
+
+
 subcommandParser :: Parser SubCommand
 subcommandParser =  
-    subparser 
-      (command "segment" 
+    hsubparser 
+      ( command "segment" 
         (info (Segment_Command <$> geoParser) fullDesc)
-      <> command "trail"
-          (info (Trail_Command <$> geoParser) fullDesc))
+      <> command "route"
+          (info (Route_Command <$> routeParser) fullDesc)
+      )
 
 
 instance ParseRecord SubCommand where

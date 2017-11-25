@@ -1,10 +1,13 @@
 {-# LANGUAGE StandaloneDeriving #-}
 
+{-# LANGUAGE DeriveDataTypeable #-}
 module Types where
 
 import Database.Postgis.Geometry
 import qualified Data.Vector as V
 import qualified Data.Text as T
+import Data.Data
+import Data.Typeable
 
 data SacScale
   = Hiking
@@ -21,19 +24,20 @@ data SacScale
 data TrailSegment
   = TrailSegment {
       _trailsegmentOsmId :: Int
+    , _trailsegmentName :: Maybe T.Text
     , _trailsegmentTrailType :: Maybe T.Text
     , _trailsegmentSacScale :: Maybe T.Text
     , _trailsegmentVisibility :: Maybe T.Text
     , _trailsegmentTrackType :: Maybe T.Text
     , _trailsegmentGeometry :: Geometry
-  } deriving (Eq, Show)
+  } deriving (Data, Typeable, Eq, Show)
 
 
 data  Route
   = Route {
+    _routeOsmId :: Int,
     _routeName :: T.Text,
-    _routeSegments :: V.Vector TrailSegment,
-    _routeOsmId :: Int
-  } deriving (Eq, Show)
+    _routeSegments :: V.Vector TrailSegment
+  } deriving (Data, Typeable, Eq, Show)
 
 

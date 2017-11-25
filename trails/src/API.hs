@@ -51,7 +51,7 @@ enterTrailio ctx bd = Nat $ mapExceptT (\m -> runDB ctx $ runReaderT m bd )
 
 
 trailServer :: ServerT TrailsAPI TrailioM
-trailServer = segmentServer -- :<|> trailServer
+trailServer = segmentServer :<|> routeServer
 
 server :: DBContext -> ServerT TrailsAPI Handler
 server ctx = enter  (enterTrailio ctx ()) trailServer
