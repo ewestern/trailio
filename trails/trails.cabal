@@ -24,6 +24,7 @@ library
                       , API
                       , Trails
                       , Geo
+                      , Parser
   build-depends:       base
                       , haskell-postgis
                       , hashable
@@ -42,6 +43,7 @@ library
                       , binary
                       , template-haskell
                       , uri-encode
+                      , attoparsec
                 
 
   default-language:    Haskell2010
@@ -111,10 +113,14 @@ executable trails-client
 
 test-suite trails-test
   type:                exitcode-stdio-1.0
-  hs-source-dirs:      test
+  hs-source-dirs:      tests
   main-is:             Spec.hs
   build-depends:       base
                      , trails
+                     , hspec
+                     , postgresql-simple
+                     , bytestring
+                     , attoparsec
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 

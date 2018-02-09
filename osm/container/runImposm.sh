@@ -1,6 +1,8 @@
 #!/bin/bash
 
+set -eux
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 #READURL=
 #MAPPING=
 
@@ -21,21 +23,19 @@ done
 
 
 
-set -u
  
 HOSTIP="10.200.10.1"
 sudo ifconfig lo0 alias $HOSTIP
 echo $HOSTIP
 
-DATADIR=$(pwd)/data/
+DATADIR=$DIR/../data/
 filename=$(basename $READURL)
 if [ ! -f $DATADIR/$filename ]; then
   wget -nc $READURL -P $DATADIR
 fi
 CONTDATA=/root/data/
+#MAPPING_PATH=$CONTDATA/$MAPPING
 
-LOCALHOST="0.0.0.0"
-#docker run -p 5432:5432 -v "$DATADIR:$CONTDATA" -e "HOSTIP=$LOCALHOST" -e "FILENAME=$filename" -e "MAPPING=$MAPPING" --net=host -t -i ewestern/osm  bin/run.sh
 docker run -v "$DATADIR:$CONTDATA" -e "HOSTIP=$HOSTIP" -e "FILENAME=$filename" -e "MAPPING=$MAPPING" -t -i --net=host ewestern/osm bin/run.sh
 
 docker ps --all | awk '{ print $1 }' | tail -n +2  | xargs docker rm

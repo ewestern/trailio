@@ -31,23 +31,14 @@ import JSON
 import Ref
 import DB
 import Types
-
+import Parser
 
 instance FromRow TrailSegment where
   fromRow = TrailSegment <$> field <*> field <*> field <*> field <*> field <*> field <*> field 
 
 
-fromComposite :: (Int, T.Text) :. V.Vector TrailSegment -> Route
-fromComposite ((oid, n):.vs) = Route oid n vs
-
-{-instance FromField TrailSegment where-}
-  {-fromField = fromJSONField-}
-
 instance FromRow Route where
-  fromRow = fmap fromComposite fromRow
-
-instance FromField TrailSegment where
-  fromField = undefined
+  fromRow = Route <$> field <*> field <*>  field
 
 type BizData = ()
 
@@ -89,26 +80,27 @@ findSegmentProximity ll d srid = liftDB $ findNear Nothing ll d srid
 findRouteByName :: T.Text -> TrailioM (Response Route)
 findRouteByName name = liftDB $ findRouteByNameDB name
 
+routeNameQuery = [sql|
+  SELECT osm_id, route_name, 
+  array_agg(
+    ROW(
+      member_id,
+      nullif(segment_name, ''),
+      nullif(trail_type, ''),
+      nullif(sac_scale, ''),
+      nullif(visibility, ''),
+      nullif(track_type, ''),
+      st_transform(geometry, ?)
+    )
+  )
+  FROM import.osm_segments
+  WHERE route_name like ('%' || ? || '%') 
+  OR segment_name like ('%' || ? || '%')
+  GROUP BY osm_id, route_name  |]
+
 findRouteByNameDB :: T.Text -> DB (Response Route)
 findRouteByNameDB name = do
-    let q = [sql|
-                SELECT osm_id, route_name, 
-                array_agg(
-                  ROW(
-                    member_id,
-                    nullif(segment_name, ''),
-                    nullif(trail_type, ''),
-                    nullif(sac_scale, ''),
-                    nullif(visibility, ''),
-                    nullif(track_type, ''),
-                    st_transform(geometry, ?)
-                  )
-                )
-                FROM osm_segments
-                WHERE route_name like ('%' || ? || '%') 
-                OR segment_name like ('%' || ? || '%')
-                GROUP BY osm_id, route_name  |]
-    rvs <- query q (4326::Int, name, name)
+    rvs <- query routeNameQuery (4326::Int, name, name)
     return $ M.fromList $ map pairToTuple rvs
 
 
@@ -153,7 +145,7 @@ instance GeoQueryable TrailSegment where
     cond <- toSql mc
     let srid' = maybe 4326 id srid
         q = [sql|
-          SELECT id, osm_id, nullif(segment_name), nullif(trail_type, ''), 
+          SELECT id, osm_id, nullif(segment_name, ''), nullif(trail_type, ''), 
           nullif(sac_scale, ''), nullif(visibility, ''), 
           nullif(track_type, ''), st_transform(geometry, ?)
           FROM osm_segments
@@ -164,7 +156,7 @@ instance GeoQueryable TrailSegment where
     cond <- toSql mc
     let srid' = maybe 4326 id srid
         q = [sql|
-          SELECT id, osm_id, nullif(segment_name), nullif(trail_type, ''), 
+          SELECT id, osm_id, nullif(segment_name, ''), nullif(trail_type, ''), 
           nullif(sac_scale, ''), nullif(visibility, ''), 
           nullif(track_type, ''), st_transform(geometry, ?)
           FROM osm_trails

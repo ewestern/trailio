@@ -14,6 +14,7 @@ const initialViewportState = {
 
 /// name of function is mapped to attribute in state
 function take(state, action) {
+  console.log("AC", action);
   var map = action.payload.reduce(function(acc, v) {
       return acc[v[0]] = v[1], acc
   }, {})

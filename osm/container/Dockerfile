@@ -3,7 +3,7 @@ MAINTAINER <pfrance@gmail.com>
 
 RUN apt-get update && apt-get install -y \
       libprotobuf-dev libleveldb-dev libgeos-dev \
-      --no-install-recommends
+      --no-install-recommends --allow-unauthenticated
 
 RUN ln -s /usr/lib/libgeos_c.so /usr/lib/libgeos.so
 

@@ -20,7 +20,8 @@
     "redux-thunk": "^2.2.0",
     "reselect": "^3.0.1",
     "styled-components": "^2.2.3",
-    "redux-promise": "0.5.3"
+    "redux-promise": "0.5.3",
+    "immutable": "3.8.2"
   },
   "devDependencies": {
     "node-plop": "^0.5.5",
@@ -56,6 +57,7 @@
       "git add"
     ]
   },
+  "proxy": "http://localhost:8081",
   "engines": {
     "npm": ">=4",
     "node": ">=6"

@@ -2,20 +2,31 @@ tags:
   load_all: true
   exclude: [created_by, source]
 tables:
-  trails:
-    type: linestring
-    mapping:
-      highway: 
-        - path
-        - footway
-        - track
-      ford: 
-        - 'yes'
+  segments:
+    type: relation_member
     columns:
-      - name: osm_id 
+      - name: osm_id
         type: id
+      - name: member_id
+        type: member_id
+      - name: member_index
+        type: member_index
+      - name: member_role
+        type: member_role
+      - name: member_type
+        type: member_type
       - name: geometry
         type: geometry
+      - name: route_name
+        key: name
+        type: string
+      - name: segment_name
+        key: name
+        type: string
+        from_member: true
+      - key: ref
+        name: ref
+        type: string
       - name: trail_type
         type: mapping_value
       - name: sac_scale
@@ -27,35 +38,10 @@ tables:
       - name: track_type
         key: track_type
         type: string
-        
-  route_members:
-    type: relation_member
-    columns:
-    - name: osm_id
-      type: id
-    - name: member
-      type: member_id
-    - name: index
-      type: member_index
-    - name: role
-      type: member_role
-    - name: type
-      type: member_type
-    - name: geometry
-      type: geometry
-    - name: relname
-      key: name
-      type: string
-    - name: name
-      key: name
-      type: string
-      from_member: true
-    - key: ref
-      name: ref
-      type: string
     mapping:
       route: [hiking, foot]
-
+      highway: [path, footway, track]
+      ford: ["yes"]
   routes:
     type: relation
     columns:
@@ -65,7 +51,7 @@ tables:
         name: ref
         type: string
       - key: name
-        name: name 
+        name: name
         type: string
       - name: member
         type: member_id
@@ -73,3 +59,5 @@ tables:
         type: member_index
     mapping:
       route: [hiking, foot]
+      highway: [path, footway, track]
+      ford: ["yes"]
